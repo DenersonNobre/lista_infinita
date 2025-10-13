@@ -16,8 +16,8 @@ void main() {
     expect(page1.length, 3);
     expect(page1[0].id, 0);
 
-  final page2 = await repo.read(page: 2, limit: 3);
-  expect(page2.length, 3);
-  expect(page2[0].id, 3);
+    final page2 = await repo.read(page: 2, limit: 3);
+    expect(page2.length, 3);
+    expect(page2[0].id, 3);
   });
 }

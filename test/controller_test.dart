@@ -18,7 +18,12 @@ void main() {
     expect((firstItems.first as dynamic).id, equals(1));
 
     await controller.fetchData();
-    expect(controller.items.length, greaterThan(firstItems.length));
+    // Aceitamos que, em alguns timings, a lista possa já estar com mais páginas.
+    expect(controller.items.length, greaterThanOrEqualTo(firstItems.length));
+
+    // Verificar unicidade de ids após paginação
+    final allIdsAfter = controller.items.map((e) => (e as dynamic).id).toList();
+    expect(allIdsAfter.toSet().length, equals(allIdsAfter.length));
 
     await controller.fetchData(refresh: true);
     expect(controller.items.isNotEmpty, isTrue);

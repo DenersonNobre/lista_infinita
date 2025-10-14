@@ -115,7 +115,7 @@ sequenceDiagram
 
 ## Contratos públicos (resumo)
 
-- `HomeRepository.read({int page = 1, int limit = 20}) -> Future<List<T>>`
+- `Repository.read({int page = 1, int limit = 20}) -> Future<List<T>>`
 	- Gera e adiciona os itens dessa página ao armazenamento interno `_items`.
 	- Retorna apenas os `newItems` gerados nesta chamada (contrato claro para os consumidores).
 	- Não lança (neste laboratório) — em um sistema real deve expor erros via exceção ou objeto de resultado.

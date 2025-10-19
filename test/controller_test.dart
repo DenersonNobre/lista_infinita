@@ -17,7 +17,7 @@ void main() {
     final firstItems = controller.items;
     expect((firstItems.first as dynamic).id, equals(1));
 
-    await controller.fetchData();
+    await controller.fetchCommand.run(false);
     // Aceitamos que, em alguns timings, a lista possa já estar com mais páginas.
     expect(controller.items.length, greaterThanOrEqualTo(firstItems.length));
 
@@ -25,12 +25,12 @@ void main() {
     final allIdsAfter = controller.items.map((e) => (e as dynamic).id).toList();
     expect(allIdsAfter.toSet().length, equals(allIdsAfter.length));
 
-    await controller.fetchData(refresh: true);
+    await controller.fetchCommand.run(true);
     expect(controller.items.isNotEmpty, isTrue);
     expect((controller.items.first as dynamic).id, equals(1));
 
-    final f1 = controller.fetchData();
-    final f2 = controller.fetchData();
+    final f1 = controller.fetchCommand.run(false);
+    final f2 = controller.fetchCommand.run(false);
     await Future.wait([f1, f2]);
 
     expect(controller.items.length, greaterThanOrEqualTo(1));

@@ -6,9 +6,7 @@ class DataSource<T> extends IDataSource<T> {
   final _store = <T>[];
 
   @override
-  void clear() {
-    _store.clear();
-  }
+  void clear() => _store.clear();
 
   @override
   Future<List<T>> read({int page = 1, int limit = 20}) async {

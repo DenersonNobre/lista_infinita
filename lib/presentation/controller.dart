@@ -2,81 +2,64 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../domain/models/produto.dart';
+import '../helpers/command.dart';
+import '../helpers/result.dart';
 
 import 'contracts/controller.dart';
 
 class Controller extends IController {
-  Controller(super.repository) {
-    init();
-  }
+  Controller(super.repository);
 
-  @override
-  init() async {
-    scrollController = ScrollController();
-    scrollController.addListener(_scrollListener);
-    await fetchData();
-  }
-
-  @override
-  dispose() {
-    scrollController.dispose();
-    super.dispose();
-  }
-
-  Future<void>? _ongoingFetch;
   int _currentPage = 0;
   final int _limit = 20;
 
   @override
-  fetchData({bool refresh = false}) async {
-    if (_ongoingFetch != null) {
-      await _ongoingFetch;
-      return;
-    }
+  Future<void> init() async {
+    scrollController = ScrollController();
+    scrollController.addListener(_scrollListener);
+    fetchCommand = Command1((p) => _fetchAction(refresh: p));
+    fetchCommand.addListener(_onFetchChanged);
+    //...
+    await fetchCommand.run(true);
+    //...
+  }
 
-    final completer = Completer<void>();
-    _ongoingFetch = completer.future;
-
+  Future<Result<List<Produto>, Exception>> _fetchAction({bool refresh = false}) async {
     isRefreshing = refresh;
 
-    if (isRefreshing) {
+    if (refresh) {
       repository.clear();
       items.clear();
       _currentPage = 0;
     }
 
-    isLoading.value = true;
-    notifyListeners();
-
-    final newItems = await repository.read(
+    final result = await repository.read(
       page: ++_currentPage,
       limit: _limit,
     );
 
-    if (isRefreshing) {
-      items = List<Produto>.from(newItems);
-    } else {
-      items.addAll(newItems);
-    }
-
-    isRefreshing = false;
-    isLoading.value = false;
-    notifyListeners();
-
-    completer.complete();
-
-    _ongoingFetch = null;
+    return result;
   }
 
-  _scrollListener() {
-    final maxScroll = scrollController.position.maxScrollExtent;
-    final currentScroll = scrollController.position.pixels;
+  void _onFetchChanged() {
+    if (fetchCommand.result != null && fetchCommand.result!.isSuccess) {
+      final newItems = fetchCommand.result!.valueOrNull ?? [];
+      if (isRefreshing) {
+        items = List<Produto>.from(newItems);
+      } else {
+        items.addAll(newItems);
+      }
+      isRefreshing = false;
+    }
+    notifyListeners();
+  }
 
-    const threshold = 50.0; // pixels antes do fim para carregar mais
-    if ((maxScroll - currentScroll) <= threshold && !isLoading.value) {
-      //...
-      fetchData();
-      //...
+  void _scrollListener() {
+    const threshold = 50.0;
+    final currentScroll = scrollController.position.pixels;
+    final maxScroll = scrollController.position.maxScrollExtent;
+    if ((maxScroll - currentScroll) <= threshold && !fetchCommand.isRunning) {
+      fetchCommand.run(false);
     }
   }
 }

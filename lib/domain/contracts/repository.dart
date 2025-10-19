@@ -1,3 +1,5 @@
+import '../../helpers/result.dart';
+//...
 import 'datasource.dart';
 
 abstract class IRepository<T> {
@@ -5,7 +7,8 @@ abstract class IRepository<T> {
   IRepository(this.dts);
 
   void clear();
-  Future<List<T>> read({
+
+  Future<Result<List<T>, Exception>> read({
     int page = 1,
     int limit = 20,
   });
